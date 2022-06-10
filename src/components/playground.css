@@ -1,0 +1,66 @@
+#playground {
+    position: relative;
+    text-align: center;
+    margin: auto;
+    margin-top: 7%;
+    width: 75%;
+    height: 65%;
+    /* background-color: rgb(135, 170, 170); */
+
+}
+
+#control-bar {
+    display: flex;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+
+    justify-content: center;
+    position: relative;
+    margin: auto;
+    width: 215px;
+    height: 60px;
+}
+
+.control-bnt {
+    border-radius: 50%;
+    border: none;
+    width: 36px;
+    height: 36px;
+    margin-top: 10px;
+    margin-left: 10.5px;
+    margin-right: 10.5px;
+    background-color: rgba(129, 129, 129, 0.9);
+}
+
+#tool-bar {
+    top: 0;
+    right: 0;
+    display: flex;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+    justify-content: center;
+    position: absolute;
+    margin: auto;
+    width: 350px;
+    height: 60px;
+    background-color: rgba(239, 239, 239, 0.5);
+}
+
+.tool-bnt {
+    border: none;
+    width: 36px;
+    height: 36px;
+    margin-top: 10px;
+    margin-left: 10.5px;
+    margin-right: 10.5px;
+    background-color: rgba(129, 129, 129, 0.9);
+}
+
+#editor {
+    position: absolute;
+    width:100%;
+    height: 90%;
+    bottom: 0;
+    left: 0;
+    background-color: antiquewhite;
+}

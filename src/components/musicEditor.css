@@ -1,0 +1,9 @@
+#container {
+
+    align-items: center;     
+    position: absolute;
+    width: 100vw;
+    height: calc(100vh - 50px);
+    left: calc(50% - 50vw);
+    top: 50px;
+}
