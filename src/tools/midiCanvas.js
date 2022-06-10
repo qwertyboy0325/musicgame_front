@@ -221,6 +221,7 @@ class NoteCanvas {
     previewColor = "#FFD3DE";
     constructor() {
         this.previewColor = "#FFD3DE";
+        this.notes=[];
     }
     // previewColor = "FFA9BE"
     
@@ -233,7 +234,6 @@ class NoteCanvas {
     inArea = () => { }
     onMouseMove = () => { }
     drawHover = (context, x, y) => {
-        notes=[];
         const { scale, compoments, ctx } = context;
         const { timestampScale, pitchScale } = scale;
         let _X = x - compoments.pitchBar.width + 1;
