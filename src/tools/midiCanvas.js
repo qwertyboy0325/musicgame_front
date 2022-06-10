@@ -52,7 +52,7 @@ export class MidiCanvas {
         canvas.addEventListener('mousemove', e => {
             let x = e.offsetX;
             let y = e.offsetY;
-            console.log(x,y);
+            // console.log(x,y);
             Object.values(this.compoments).forEach(compoment => {
                 if (compoment.inArea(this.context, x, y)) {
                     compoment.onMouseMove(this.context, x, y);
@@ -64,6 +64,7 @@ export class MidiCanvas {
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
+        this.context.ctx.save();
     }
 
 
@@ -92,7 +93,7 @@ class PitchBarCanvas {
     }
     inArea = (context, x, y) => {
         const { canvas } = context;
-        console.log("pitch")
+        // console.log("pitch")
         return (x >= 0 && x < this.width) && (y >= 0 && canvas.offsetHeight);
     }
     onMouseMove = (context, x, y) => {
@@ -118,7 +119,7 @@ class TimestampBarCanvas {
     }
     inArea = (context, x, y) => {
         const { canvas } = context;
-        console.log("timestamp")
+        // console.log("timestamp")
         return (x >= 22 && x < canvas.offsetWidth) && (y >= 0 && this.width);
     }
     onMouseMove = (context, x, y) => {
@@ -206,40 +207,75 @@ class SheetCanvas {
     onMouseMove = (context, x, y) => {
         const { compoments } = context;
         const { note } = compoments;
-        note.drawPreview(context, x, y);
+        note.drawHover(context, x, y);
     }
 }
 
 class NoteCanvas {
+    notes;
     noteX;
     noteY;
-    // previewColor = "FFA9BE"
+    lstHoverNoteX;
+    lstHoverNoteY;
+    noteHover;
     previewColor = "#FFD3DE";
+    constructor() {
+        this.previewColor = "#FFD3DE";
+    }
+    // previewColor = "FFA9BE"
+    
     draw = (context) => {
 
     }
     draw = (context, x, y, length) => {
 
     }
-    inArea = () => {}
-    onMouseMove = () => {}
-    drawPreview = (context, x, y) => {
+    inArea = () => { }
+    onMouseMove = () => { }
+    drawHover = (context, x, y) => {
+        notes=[];
         const { scale, compoments, ctx } = context;
         const { timestampScale, pitchScale } = scale;
-        let { nX, nY } = this;
-        let _X = x - compoments.pitchBar.width;
-        let _Y = y - compoments.timestampBar.width;
-        const wireWidth = 20 * (timestampScale + 1);
-        const wireHeight = 20 * (pitchScale + 1);
-        nX = _X / wireWidth;
-        nY = _Y / wireHeight;
+        let _X = x - compoments.pitchBar.width + 1;
+        let _Y = y - compoments.timestampBar.width + 1;
+        let wireWidth = 20 * (pitchScale + 1);
+        let wireHeight = 20 * (timestampScale + 1);
+        this.noteX = Math.ceil(_X / wireWidth) - 1;
+        this.noteY = Math.ceil(_Y / wireHeight) - 1;
+        if (!(this.lstHoverNoteX === this.noteX && this.lstHoverNoteY === this.noteY)) {
+            this.clearHover(context, this.lstHoverNoteX, this.lstHoverNoteY);
+            ctx.fillStyle = this.previewColor;
+            ctx.fillRect(compoments.pitchBar.width + wireWidth * this.noteX + 1, compoments.timestampBar.width + wireHeight * this.noteY + 1, wireWidth - 2, wireHeight - 2);
+            // ctx.fill(this.noteHover);
+        }
+        this.lstHoverNoteX = this.noteX;
+        this.lstHoverNoteY = this.noteY;
 
-        ctx.beginPath();
-        ctx.fillStyle = this.previewColor;
-        ctx.moveTo(compoments.pitchBar.width + wireWidth * nX, compoments.timestampBar.width + wireHeight * nY);
-        ctx.lineTo(compoments.pitchBar.width + wireWidth * nX, compoments.timestampBar.width + wireHeight * nY + 1);
-        ctx.lineTo(compoments.pitchBar.width + wireWidth * nX + 1, compoments.timestampBar.width + wireHeight * nY + 1);
-        ctx.lineTo(compoments.pitchBar.width + wireWidth * nX + 1, compoments.timestampBar.width + wireHeight * nY);
-        ctx.fill();
+    }
+    clearHover = (context, noteX, noteY) => {
+        console.log("clearHover");
+        const { scale, compoments, ctx } = context;
+        const { timestampScale, pitchScale } = scale;
+        let wireWidth = 20 * (pitchScale + 1);
+        let wireHeight = 20 * (timestampScale + 1);
+        const wiresColor1 = "#D9D9D9";
+        const wiresColor2 = "#CCCCCC";
+        ctx.globalCompositeOperation = "source-over";
+        if(false){
+
+            return;
+        }
+        else if (noteY % 2 !== 0) {
+            ctx.fillStyle = wiresColor1;
+
+            // console.log(wiresColor1);
+        }
+        else {
+            ctx.fillStyle = wiresColor2;
+            // console.log(wiresColor2);
+        }
+        console.log(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
+        ctx.fillRect(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
+        // ctx.fillRect(23,23,18,18);
     }
 }
