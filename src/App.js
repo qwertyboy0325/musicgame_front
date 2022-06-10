@@ -8,7 +8,7 @@ import { MusicEditor } from './components/musicEditor';
 function App() {
   return (
     // <React.Fragment>
-    <div className="App">
+    <div className="App" >
       <NavBar />
       <Routes>
         <Route path="/" element={<MusicEditor />} />

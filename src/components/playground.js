@@ -1,7 +1,17 @@
-import React from "react";
+import React, { useEffect,useRef } from "react";
+import { MidiCanvas } from "../tools/midiCanvas";
 import "./playground.css"
 
 export function PlayGround() {
+    const canvasRef = useRef(null);
+
+    useEffect( () => {
+        const canvas = canvasRef.current;
+
+        const midicanvas = new MidiCanvas(canvas);
+        midicanvas.draw();
+    })
+    
     return (
         <div id="playground">
             <div id="control-bar">
@@ -18,7 +28,7 @@ export function PlayGround() {
                 <button className="tool-bnt" id="paste-bnt"></button>
             </div>
             <div id="editor">
-                <canvas id="editor-canvas"></canvas>
+                <canvas id="editor-canvas" ref = {canvasRef} width="100%" height="100%"></canvas>
             </div>
         </div>
     )
