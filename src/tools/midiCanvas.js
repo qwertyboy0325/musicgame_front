@@ -1,7 +1,7 @@
 export class MidiCanvas {
     context;
     compoments;
-
+    isLeftMouseDown;
     timestampScale;
     pitchScale;
 
@@ -29,12 +29,16 @@ export class MidiCanvas {
         this.timestampScale = 0;
         this.pitchScale = 0;
 
+        //setEvent
+        this.isLeftMouseDown = false;
+
         // set Context
         let compoments = this.compoments;
         this.context = {
             canvas, ctx,
             scale: { timestampScale: this.timestampScale, pitchScale: this.pitchScale },
             compoments,
+            isMouseDown: this.isLeftMouseDown,
         };
         this.init();
     }
@@ -54,17 +58,37 @@ export class MidiCanvas {
             let y = e.offsetY;
             // console.log(x,y);
             Object.values(this.compoments).forEach(compoment => {
-                if (compoment.inArea(this.context, x, y)) {
-                    compoment.onMouseMove(this.context, x, y);
-                }
+                compoment.onMouseMove(this.context, x, y);
             })
+        });
+        canvas.addEventListener('mousedown', e => {
+            let x = e.offsetX;
+            let y = e.offsetY;
+            //Left Btn Down
+            if (e.button == 0) {
+                this.isLeftMouseDown = true;
+                Object.values(this.compoments).forEach(compoment => {
+                    compoment.onLeftMouseDown(this.context, x, y);
+                })
+            }
+
+        })
+        canvas.addEventListener('mouseup', e => {
+            let x = e.offsetX;
+            let y = e.offsetY;
+            //Left Btn Up
+            if (e.button == 0) {
+                this.isLeftMouseDown = false;
+                Object.values(this.compoments).forEach(compoment => {
+                    compoment.onLeftMouseUp(this.context, x, y);
+                })
+            }
         })
     }
     draw = () => {
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
-        this.context.ctx.save();
     }
 
 
@@ -97,7 +121,13 @@ class PitchBarCanvas {
         return (x >= 0 && x < this.width) && (y >= 0 && canvas.offsetHeight);
     }
     onMouseMove = (context, x, y) => {
-
+        if (!this.inArea(context, x, y)) return;
+    }
+    onLeftMouseDown = (context, x, y) => {
+        if (this.inArea(context, x, y)) console.log("Pitch Bar In.");
+    }
+    onLeftMouseUp = (context, x, y) => {
+        if (this.inArea(context, x, y)) console.log("Pitch Bar Out.");
     }
 }
 class TimestampBarCanvas {
@@ -119,11 +149,17 @@ class TimestampBarCanvas {
     }
     inArea = (context, x, y) => {
         const { canvas } = context;
-        // console.log("timestamp")
-        return (x >= 22 && x < canvas.offsetWidth) && (y >= 0 && this.width);
+        return (x >= 22 && x < canvas.offsetWidth) && (y >= 0 && y <= this.width);
     }
     onMouseMove = (context, x, y) => {
+        if (!this.inArea(context, x, y)) return;
 
+    }
+    onLeftMouseDown = (context, x, y) => {
+        if (this.inArea(context, x, y)) console.log("Timestamp Bar In.");
+    }
+    onLeftMouseUp = (context, x, y) => {
+        if (this.inArea(context, x, y)) console.log("Timestamp Bar Out.");
     }
 }
 
@@ -134,11 +170,13 @@ class SheetCanvas {
     backgroundColor;
     wiresColor1;
     measureColor;
+    mouseDown;
     constructor() {
         this.backgroundColor = "#D9D9D9";
         this.wiresColor1 = "#A3A3A3";
         this.wiresColor2 = "#CCCCCC";
         this.measureColor = "#000000";
+        this.mouseDown = false;
     }
     draw = (context) => {
         this.drawBackground(context);
@@ -205,9 +243,23 @@ class SheetCanvas {
     }
 
     onMouseMove = (context, x, y) => {
+        if (!this.inArea(context, x, y)) return;
+        const { compoments, isMouseDown } = context;
+        const { note } = compoments;
+        if (!isMouseDown) note.drawHover(context, x, y);
+    }
+    // 今天寫到這裡,要處理按下後鎖定y軸的功能,以及放下後確定的功能
+    onLeftMouseDown = (context, x, y) => {
+        if (this.inArea(context, x, y)) console.log("Sheet In.");
         const { compoments } = context;
         const { note } = compoments;
-        note.drawHover(context, x, y);
+        note.draw(context, x, y, 1);
+    }
+    onLeftMouseUp = (context, x, y) => {
+
+        if (this.inArea(context, x, y)) console.log("Sheet Out.");
+        const { compoments } = context;
+        const { note } = compoments;
     }
 }
 
@@ -221,10 +273,10 @@ class NoteCanvas {
     previewColor = "#FFD3DE";
     constructor() {
         this.previewColor = "#FFD3DE";
-        this.notes=[];
+        this.notes = [];
     }
     // previewColor = "FFA9BE"
-    
+
     draw = (context) => {
 
     }
@@ -232,7 +284,9 @@ class NoteCanvas {
 
     }
     inArea = () => { }
-    onMouseMove = () => { }
+    onMouseMove = () => {
+        if (!this.inArea()) return;
+    }
     drawHover = (context, x, y) => {
         const { scale, compoments, ctx } = context;
         const { timestampScale, pitchScale } = scale;
@@ -261,7 +315,7 @@ class NoteCanvas {
         const wiresColor1 = "#D9D9D9";
         const wiresColor2 = "#CCCCCC";
         ctx.globalCompositeOperation = "source-over";
-        if(false){
+        if (false) {
 
             return;
         }
@@ -277,5 +331,11 @@ class NoteCanvas {
         console.log(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
         ctx.fillRect(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
         // ctx.fillRect(23,23,18,18);
+    }
+    onLeftMouseDown = (context, x, y) => {
+
+    }
+    onLeftMouseUp = (context, x, y) => {
+
     }
 }
