@@ -164,6 +164,7 @@ class TimestampBarCanvas {
 }
 
 class SheetCanvas {
+    currentNoteID;
     wireWidth;
     wireHeight;
     scale;
@@ -250,10 +251,12 @@ class SheetCanvas {
     }
     // 今天寫到這裡,要處理按下後鎖定y軸的功能,以及放下後確定的功能
     onLeftMouseDown = (context, x, y) => {
-        if (this.inArea(context, x, y)) console.log("Sheet In.");
         const { compoments } = context;
         const { note } = compoments;
-        note.draw(context, x, y, 1);
+        
+        if (this.inArea(context, x, y)){
+
+        }
     }
     onLeftMouseUp = (context, x, y) => {
 
@@ -287,6 +290,12 @@ class NoteCanvas {
     onMouseMove = () => {
         if (!this.inArea()) return;
     }
+    onLeftMouseDown = (context, x, y) => {
+
+    }
+    onLeftMouseUp = (context, x, y) => {
+
+    }
     drawHover = (context, x, y) => {
         const { scale, compoments, ctx } = context;
         const { timestampScale, pitchScale } = scale;
@@ -294,17 +303,28 @@ class NoteCanvas {
         let _Y = y - compoments.timestampBar.width + 1;
         let wireWidth = 20 * (pitchScale + 1);
         let wireHeight = 20 * (timestampScale + 1);
-        this.noteX = Math.ceil(_X / wireWidth) - 1;
-        this.noteY = Math.ceil(_Y / wireHeight) - 1;
-        if (!(this.lstHoverNoteX === this.noteX && this.lstHoverNoteY === this.noteY)) {
+        let noteX = Math.ceil(_X / wireWidth) - 1;
+        let noteY = Math.ceil(_Y / wireHeight) - 1;
+        if (!(this.lstHoverNoteX === noteX && this.lstHoverNoteY === noteY)) {
             this.clearHover(context, this.lstHoverNoteX, this.lstHoverNoteY);
             ctx.fillStyle = this.previewColor;
-            ctx.fillRect(compoments.pitchBar.width + wireWidth * this.noteX + 1, compoments.timestampBar.width + wireHeight * this.noteY + 1, wireWidth - 2, wireHeight - 2);
+            ctx.fillRect(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
             // ctx.fill(this.noteHover);
         }
-        this.lstHoverNoteX = this.noteX;
-        this.lstHoverNoteY = this.noteY;
-
+        this.lstHoverNoteX = noteX;
+        this.lstHoverNoteY = noteY;
+    }
+    createNote = (context, x, y) => {
+        const { scale, compoments, ctx } = context;
+        const { timestampScale, pitchScale } = scale;
+        let _X = x - compoments.pitchBar.width + 1;
+        let _Y = y - compoments.timestampBar.width + 1;
+        let wireWidth = 20 * (pitchScale + 1);
+        let wireHeight = 20 * (timestampScale + 1);
+        let noteX = Math.ceil(_X / wireWidth) - 1;
+        let noteY = Math.ceil(_Y / wireHeight) - 1;
+        let note = new Note(noteX, noteY);
+        this.notes.push(note);
     }
     clearHover = (context, noteX, noteY) => {
         console.log("clearHover");
@@ -332,10 +352,33 @@ class NoteCanvas {
         ctx.fillRect(compoments.pitchBar.width + wireWidth * noteX + 1, compoments.timestampBar.width + wireHeight * noteY + 1, wireWidth - 2, wireHeight - 2);
         // ctx.fillRect(23,23,18,18);
     }
-    onLeftMouseDown = (context, x, y) => {
 
+}
+
+class Note {
+    static _id;
+    id;
+    startAt;
+    endAt;
+    constructor(noteX, noteY) {
+        this.create(noteX, noteY);
     }
-    onLeftMouseUp = (context, x, y) => {
-
+    create = (noteX, noteY) => {
+        this.startAt = {
+            x: noteX,
+            y: noteY,
+        }
+        this.endAt = {
+            x: noteX,
+            y: noteY,
+        }
+    }
+    set = (noteX) => {
+        this.endAt = {
+            y: noteX,
+        }
+    }
+    get length() {
+        return Math.abs(this.startAt.noteX - this.endAt.noteX);
     }
 }
