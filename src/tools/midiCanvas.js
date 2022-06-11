@@ -351,7 +351,7 @@ class NoteCanvas {
         let { lstHoverNotePos } = compoments.sheet;
         let canPos = canvasHelper.notePos2CanPos(context, startAt);
         // console.log(lstHoverNotePos);
-        if (!lstHoverNotePos||!(lstHoverNotePos.x === note.startAt.x && lstHoverNotePos.y === note.startAt.y)) {
+        if (!lstHoverNotePos || !(lstHoverNotePos.x === note.startAt.x && lstHoverNotePos.y === note.startAt.y)) {
             // this.clearHover(context, this.lstHoverNoteX, this.lstHoverNoteY); //todo: change param
             ctx.fillStyle = this.hoverColor;
             ctx.fillRect(canPos.x, canPos.y, canPos.width - 2, canPos.height - 2);
@@ -362,7 +362,7 @@ class NoteCanvas {
         }
     }
     createNote = (context, x, y) => {
-        const { scale, compoments, ctx } = context;
+        const { scale, compoments } = context;
         const { timestampScale, pitchScale } = scale;
         let _X = x - compoments.pitchBar.width + 1;
         let _Y = y - compoments.timestampBar.width + 1;
@@ -370,6 +370,12 @@ class NoteCanvas {
         let wireHeight = 20 * (timestampScale + 1);
         let noteX = Math.ceil(_X / wireWidth) - 1;
         let noteY = Math.ceil(_Y / wireHeight) - 1;
+
+
+        if (Note.isExisted(context, { x: noteX, y: noteY })) {
+            console.log("isExisted");
+            return;
+        }
         let note = new Note(noteX, noteY);
         compoments.sheet.notes.push(note);
 
@@ -431,5 +437,17 @@ class Note {
 
         return Math.abs(this.startAt.x - this.endAt.x) + 1;
     }
+    // check note is existed?
+    static isExisted = (context, pos) => {
+        let { notes } = context.compoments.sheet;
+        let isXIn, isYIn = false;
+        console.log(notes);
+        for (let i = 0, length = notes.length; i < length; i++) {
+            let note = notes[i];
+            isXIn = ((pos.x >= note.startAt.x) && (pos.x <= note.endAt.x));
+            isYIn = ((pos.y >= note.startAt.y) && (pos.y <= note.endAt.y));
+            if (isXIn && isYIn) return true;
+        }
+        return false;
+    }
 }
-
