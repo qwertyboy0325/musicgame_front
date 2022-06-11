@@ -315,6 +315,7 @@ class NoteCanvas {
         const { sheet } = compoments;
         const { notes } = sheet;
         // console.log(sheet);
+        Note.normalize(context);
         if (sheet.noteHover) {
             this.drawHover(context, sheet.noteHover);
         }
@@ -449,5 +450,16 @@ class Note {
             if (isXIn && isYIn) return true;
         }
         return false;
+    }
+    static normalize = (context) => {
+        let { notes } = context.compoments.sheet;
+        for (let i = 0, length = notes.length; i < length; i++){
+            let note = notes[i];
+            if(note.startAt.x>note.endAt.x){
+                let t = note.startAt.x;
+                note.startAt.x = note.endAt.x;
+                note.endAt.x = t;
+            }
+        }
     }
 }
