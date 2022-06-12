@@ -34,7 +34,7 @@ export function NavBar() {
                     onMouseEnter={triggerEvent.onMouseHandler}
                     onClick={triggerEvent.onClickHandler}
                     onMouseLeave={triggerEvent.onMouseLeaveHandler}
-                    ref={triggerEvent.triggerRef}></div>
+                    ref={triggerRef}></div>
                 <div className="user-info" ref={userInfoRef}>
                     <div className="user-avatar"  ></div>
                     <div className="user-info-content" ref={userInfoContentRef} >
