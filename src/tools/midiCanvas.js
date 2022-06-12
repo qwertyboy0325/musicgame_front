@@ -107,10 +107,19 @@ export class MidiCanvas {
                     })
                     break;
                 case 1:
-                    canvasEvent.isMidMouseDown = true;
+                    if (!canvasEvent.isMidMouseDown) {
+                        canvasEvent.isMidMouseDown = true;
+                        canvasEvent.mouseDownPos = {
+                            x: x,
+                            y: y,
+                        }
+                        break;
+                    }
+
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onMidMouseDown(this.context, x, y);
                     })
+
             }
 
         })
@@ -120,11 +129,19 @@ export class MidiCanvas {
             canvasEvent.mouseDownPos = null;
             this.draw();
             //Left Btn Up
-            if (e.button == 0) {
-                canvasEvent.isLeftMouseDown = false;
-                Object.values(this.compoments).forEach(compoment => {
-                    compoment.onLeftMouseUp(this.context, x, y);
-                })
+            switch (e.button) {
+                case 0:
+                    canvasEvent.isLeftMouseDown = false;
+                    Object.values(this.compoments).forEach(compoment => {
+                        compoment.onLeftMouseUp(this.context, x, y);
+                    })
+                    break;
+                case 1:
+                    if (canvasEvent.isMidMouseDown) {
+                        canvasEvent.isMidMouseDown = false;
+                        canvasEvent.mouseDownPos = null
+                    }
+                    break;
             }
         })
     }
@@ -235,8 +252,8 @@ class SheetCanvas {
         this.notes = [];
         this.selectedNote = null;
         this.offset = {
-            x: 87,
-            y: 87,
+            x: 0,
+            y: 0,
         }
         this.sheetMod = 0; //{0:Default,1:Move}
     }
@@ -273,10 +290,11 @@ class SheetCanvas {
             if (i % 2 === 0) {
                 ctx.beginPath();
                 ctx.fillStyle = this.wiresColor2;
-                ctx.moveTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY);
-                ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * i - offsetY);
-                ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
-                ctx.lineTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
+                ctx.fillRect(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY, this.wireWidth * 128, this.wireHeight)
+                // ctx.moveTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY);
+                // ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * i - offsetY);
+                // ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
+                // ctx.lineTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
                 ctx.fill();
             }
         }
@@ -287,14 +305,14 @@ class SheetCanvas {
                 ctx.beginPath();
                 ctx.strokeStyle = this.measureColor;
                 ctx.moveTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth - offsetY);
-                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, this.wireHeight * 60 - offsetY);
+                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth + this.wireHeight * 60 - offsetY);
                 ctx.stroke();
                 ctx.lineWidth = 1;
             } else {
                 ctx.beginPath();
                 ctx.strokeStyle = this.wiresColor1;
                 ctx.moveTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth - offsetY);
-                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, this.wireHeight * 60 - offsetY);
+                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth + this.wireHeight * 60 - offsetY);
                 ctx.stroke();
             }
         }
@@ -310,6 +328,8 @@ class SheetCanvas {
         if (!this.inArea(context, x, y)) return;
         const offsetX = this.offset.x;
         const offsetY = this.offset.y;
+        const { scale, canvas, compoments } = context;
+        const { timestampScale, pitchScale } = scale;
 
         let notePos = canvasHelper.canPos2notePos(context, { x: x + offsetX, y: y + offsetY })
 
@@ -324,20 +344,23 @@ class SheetCanvas {
         if (canvasEvent.isMidMouseDown || this.sheetMod == 1) {
             if (canvasEvent.mouseDownPos) {
                 const startPos = canvasEvent.mouseDownPos;
-                console.log(startPos);
-                this.offset.x += startPos.x - x;
-                this.offset.y += startPos.y - y;
+                console.log()
+                if (startPos.x - x >= 0 &&
+                    startPos.x - x <= 128 * 20 * (timestampScale + 1) + compoments.pitchBar.width + 1 - canvas.width)
+                    this.offset.x = startPos.x - x;
+                if (startPos.y - y >= 0 &&
+                    startPos.y - y <= 60 * 20 * (pitchScale + 1) + compoments.timestampBar.width - canvas.height)
+                    this.offset.y = startPos.y - y;
             }
         }
         // if (!isMouseDown) note.drawHover(context, x, y);
     }
     onLeftMouseDown = (context, x, y) => {
-        const { compoments } = context;
+        const { compoments, timestampScale, pitchScale } = context;
         const { note } = compoments;
-        const { sheet } = compoments;
-        const offsetX = sheet.offset.x;
-        const offsetY = sheet.offset.y;
-
+        const offsetX = this.offset.x;
+        const offsetY = this.offset.y;
+        // console.log(timestampScale)
         if (this.inArea(context, x, y + offsetY)) {
             note.createNote(context, x + offsetX, y + offsetY);
             console.log("Sheet In.");
@@ -350,9 +373,10 @@ class SheetCanvas {
         const { note } = compoments;
     }
     onMidMouseDown = (context, x, y) => {
-        canvasEvent.mouseDownPos = {
-            x: x,
-            y: y,
+        if (canvasEvent.mouseDownPos) {
+            const startPos = canvasEvent.mouseDownPos;
+            startPos.x += this.offset.x;
+            startPos.y += this.offset.y;
         }
     }
 }
