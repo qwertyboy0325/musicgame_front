@@ -1,5 +1,5 @@
 #navbar {
-    position:relative;
+    position: relative;
     width: 100%;
     height: 50px;
     left: 0px;
@@ -7,34 +7,82 @@
     background: #7e7e7e;
     z-index: 200;
 }
-#user-avatar{
-    position:absolute;
-    z-index: 9999;
-    float:none;
+
+
+
+#avatar-trigger {
+    z-index: 999;
+    position: absolute;
+    float: none;
     width: 60px;
     height: 60px;
     right: 15%;
     top: 20px;
+    display: hidden;
+}
+
+.user-info {
+    position: absolute;
+    float: none;
+    height: 260px;
+    width: 200px;
+    right: calc(15% - (200px/2) + 30px);
+    top: -180px;
+    transition: all 0.2s ease-out;
+    /* animation: drop-down 0.5s reverse; */
+}
+
+.user-info-box {
+    height: 100%;
+    width: 100%;
+}
+
+.user-avatar {
+    position: absolute;
+    z-index: 201;
+    float: none;
+    width: 60px;
+    height: 60px;
+    right: calc(50% - 60px/2);
+    top: calc(100% - 60px);
 
     border-radius: 100%;
 
     background-color: #D9D9D9;
 }
-#trigger{
-    position:absolute;
-    float:none;
-    width: 60px;
-    height: 60px;
-    right: 15%;
-    top: 20px;
+
+.trigger:hover~.user-info {
+    transform: translate(0, 30px);
 }
-#user-info{
-    z-index: 100;
-    position: relative;
+
+.user-info.hover > .user-info-content {
+    visibility: visible;
+    transition: opacity 0.2s ease-in;
+    opacity: 30%;
+}
+
+.user-info.open {
+    transform: translate(0, 230px);
+}
+
+.user-info.open > * {
+    visibility: visible;
+    transition: opacity 0.2s ease-in;
+    opacity: 100%;
+}
+
+.user-info-content {
+    transition: all 0.2s ease-out;
+    border-radius: 5px;
+    position: absolute;
+    opacity: 0%;
+    visibility: hidden;
+    /* display: hidden; */
+    z-index: -990;
     float: none;
     width: 200px;
-    top: 20px;
-    height: 200px;
-    right: 110%;
-    background-color: #f5f5f5;
+    height: 230px;
+    top: 0;
+    right: calc(50% - 200px/2);
+    background-color: #f3f3f3;
 }
