@@ -17,13 +17,22 @@ export function NavBar() {
             // let userInfoContent = userInfoContentRef.current;
             let userInfo = userInfoRef.current;
             let trigger = triggerRef.current;
-            trigger.style.display = "none";
+            trigger.classList.add("disable");
             userInfo.classList.remove("hover");
             userInfo.classList.add("open");
         },
         onMouseLeaveHandler: () => {
             let userInfo = userInfoRef.current;
             userInfo.classList.remove("hover");
+        }
+    }
+
+    const userInfoHandler = {
+        onMouseLeaveHandler : () =>{
+            let userInfo = userInfoRef.current;
+            let trigger = triggerRef.current;
+            trigger.classList.remove("disable");
+            userInfo.classList.remove("open");
         }
     }
 
@@ -35,9 +44,9 @@ export function NavBar() {
                     onClick={triggerEvent.onClickHandler}
                     onMouseLeave={triggerEvent.onMouseLeaveHandler}
                     ref={triggerRef}></div>
-                <div className="user-info" ref={userInfoRef}>
+                <div className="user-info" ref={userInfoRef} onMouseLeave={userInfoHandler.onMouseLeaveHandler}>
                     <div className="user-avatar"  ></div>
-                    <div className="user-info-content" ref={userInfoContentRef} >
+                    <div className="user-info-content" ref={userInfoContentRef}>
                         {/* <div id="user-avatar" style={{ right: '35%', top: '90%' }}></div> */}
 
                     </div>
