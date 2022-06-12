@@ -178,7 +178,7 @@ class PitchBarCanvas {
         ctx.strokeStyle = "#FFFFFF";
         for (let i = 0; i < 60; i++) {
             let drawpos = compoments.timestampBar.width + (compoments.sheet.wireHeight / 2) * (i * 2) - compoments.sheet.offset.y;
-            if(drawpos>compoments.timestampBar.width){
+            if (drawpos > compoments.timestampBar.width) {
                 ctx.beginPath();
                 ctx.moveTo(this.width * 2 / 3, drawpos);
                 ctx.lineTo(this.width, drawpos);
@@ -310,10 +310,6 @@ class SheetCanvas {
                 ctx.beginPath();
                 ctx.fillStyle = this.wiresColor2;
                 ctx.fillRect(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY, this.wireWidth * 128, this.wireHeight)
-                // ctx.moveTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY);
-                // ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * i - offsetY);
-                // ctx.lineTo(128 * this.wireWidth - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
-                // ctx.lineTo(pitchWidht - offsetX, timestampWidth + this.wireHeight * (i + 1) - offsetY);
                 ctx.fill();
             }
         }
@@ -354,7 +350,8 @@ class SheetCanvas {
 
 
         if (canvasEvent.isLeftMouseDown && this.selectedNote && this.sheetMod == 0) {
-            this.selectedNote.endAt.x = notePos.x;
+            if (!Note.isExisted(context, { x: notePos, y: this.selectedNote.endAt.y }))
+                this.selectedNote.endAt.x = notePos.x;
         } else {
             this.selectedNote = null;
             this.noteHover = new Note(notePos.x, notePos.y);
@@ -363,7 +360,6 @@ class SheetCanvas {
         if (canvasEvent.isMidMouseDown || this.sheetMod == 1) {
             if (canvasEvent.mouseDownPos) {
                 const startPos = canvasEvent.mouseDownPos;
-                console.log()
                 if (startPos.x - x >= 0 &&
                     startPos.x - x <= 128 * 20 * (timestampScale + 1) + compoments.pitchBar.width + 1 - canvas.width)
                     this.offset.x = startPos.x - x;
@@ -379,15 +375,14 @@ class SheetCanvas {
         const { note } = compoments;
         const offsetX = this.offset.x;
         const offsetY = this.offset.y;
-        // console.log(timestampScale)
-        if (this.inArea(context, x, y + offsetY)) {
+        if (this.inArea(context, x, y)) {
             note.createNote(context, x + offsetX, y + offsetY);
-            console.log("Sheet In.");
+            // console.log("Sheet In.");
         }
     }
     onLeftMouseUp = (context, x, y) => {
 
-        if (this.inArea(context, x, y)) console.log("Sheet Out.");
+        // if (this.inArea(context, x, y)) console.log("Sheet Out.");
         const { compoments } = context;
         const { note } = compoments;
     }
@@ -415,16 +410,13 @@ class NoteCanvas {
         const { compoments } = context;
         const { sheet } = compoments;
         const { notes } = sheet;
-        // console.log(selectedNote);
         if (sheet.noteHover) {
             this.drawHover(context, sheet.noteHover);
         }
         if (sheet.selectedNote) {
-            console.log(notes);
         }
         if (notes.length)
             for (let i = 0, length = notes.length; i < length; i++) {
-                // console.log(notes);
                 this.drawNote(context, notes[i]);
             }
 
@@ -487,7 +479,6 @@ class NoteCanvas {
         let noteY = Math.ceil(_Y / wireHeight) - 1;
         let { sheet } = compoments;
 
-
         if (Note.isExisted(context, { x: noteX, y: noteY })) {
             console.log("isExisted");
             return;
@@ -528,7 +519,6 @@ class Note {
     static isExisted = (context, pos) => {
         let { notes } = context.compoments.sheet;
         let isXIn, isYIn = false;
-        // console.log(notes);
         for (let i = 0, length = notes.length; i < length; i++) {
             let note = notes[i];
             isXIn = ((pos.x >= note.startAt.x) && (pos.x <= note.endAt.x));
