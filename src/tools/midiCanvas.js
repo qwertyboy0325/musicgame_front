@@ -48,9 +48,9 @@ export class MidiCanvas {
         let timestampBar = new TimestampBarCanvas();
         let sheet = new SheetCanvas();
         let note = new NoteCanvas();
-
+        let playbar = new PlayBar();
         // pack Compoments
-        this.compoments = { sheet, note, timestampBar, pitchBar };
+        this.compoments = { sheet, note, timestampBar, pitchBar, playbar };
 
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
@@ -178,7 +178,7 @@ class PitchBarCanvas {
         ctx.strokeStyle = "#FFFFFF";
         for (let i = 0; i < 60; i++) {
             let drawpos = compoments.timestampBar.width + (compoments.sheet.wireHeight / 2) * (i * 2) - compoments.sheet.offset.y;
-            if (drawpos > compoments.timestampBar.width) {
+            if (drawpos >= compoments.timestampBar.width) {
                 ctx.beginPath();
                 ctx.moveTo(this.width * 2 / 3, drawpos);
                 ctx.lineTo(this.width, drawpos);
@@ -534,5 +534,38 @@ class Note {
             this.startAt.x = this.endAt.x;
             this.endAt.x = t;
         }
+    }
+}
+
+class PlayBar {
+    start;
+    draw = (context) => {
+        const { ctx, canvas, compoments } = context;
+        this.start = compoments.pitchBar.width;
+        ctx.fillStyle = "#0000C6";
+        ctx.beginPath();
+        ctx.moveTo(this.start - 5, 5);
+        ctx.lineTo(this.start + 5, 5);
+        ctx.lineTo(this.start, 20);
+        ctx.fill();
+        
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = "#0000C6";
+        ctx.beginPath();
+        ctx.moveTo(this.start, 18);
+        ctx.lineTo(this.start, canvas.offsetHeight);
+        ctx.stroke();
+    }
+    onMouseMove = (context, x, y) => {
+
+    }
+    onLeftMouseDown = (context, x, y) => {
+
+    }
+    onLeftMouseUp = (context, x, y) => {
+
+    }
+    onMidMouseDown = (context, x, y) => {
+
     }
 }
