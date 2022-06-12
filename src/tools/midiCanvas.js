@@ -164,7 +164,7 @@ class PitchBarCanvas {
         this.width = 22;
     }
     draw = (context) => {
-        const { ctx, canvas } = context;
+        const { ctx, canvas, compoments } = context;
 
         ctx.fillStyle = "#636060";
         ctx.beginPath();
@@ -174,11 +174,22 @@ class PitchBarCanvas {
         ctx.lineTo(0, 10);
         ctx.quadraticCurveTo(0, 0, 10, 0);
         ctx.fill()
+
+        ctx.strokeStyle = "#FFFFFF";
+        for (let i = 0; i < 60; i++) {
+            let drawpos = compoments.timestampBar.width + (compoments.sheet.wireHeight / 2) * (i * 2) - compoments.sheet.offset.y;
+            if(drawpos>compoments.timestampBar.width){
+                ctx.beginPath();
+                ctx.moveTo(this.width * 2 / 3, drawpos);
+                ctx.lineTo(this.width, drawpos);
+                ctx.stroke();
+            }
+        }
     }
     inArea = (context, x, y) => {
         const { canvas } = context;
         // console.log("pitch")
-        return (x >= 0 && x < this.width) && (y >= 0 && canvas.offsetHeight);
+        return (x >= 0 && x <= this.width) && (y >= 0 && y < canvas.offsetHeight);
     }
     onMouseMove = (context, x, y) => {
         if (!this.inArea(context, x, y)) return;
@@ -201,7 +212,7 @@ class TimestampBarCanvas {
         this.color = "#636060";
     }
     draw = (context) => {
-        const { ctx, canvas } = context;
+        const { ctx, canvas, compoments } = context;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.moveTo(22, 0);
@@ -209,6 +220,14 @@ class TimestampBarCanvas {
         ctx.lineTo(canvas.offsetWidth, this.width);
         ctx.lineTo(0, this.width);
         ctx.fill();
+
+        ctx.strokeStyle = "#FFFFFF";
+        for (let i = 0; i < 128; i++) {
+            ctx.beginPath();
+            ctx.moveTo(compoments.pitchBar.width + (compoments.sheet.wireWidth / 2) * (i * 2) - compoments.sheet.offset.x, this.width * 2 / 3);
+            ctx.lineTo(compoments.pitchBar.width + (compoments.sheet.wireWidth / 2) * (i * 2) - compoments.sheet.offset.x, this.width);
+            ctx.stroke();
+        }
     }
     inArea = (context, x, y) => {
         const { canvas } = context;
