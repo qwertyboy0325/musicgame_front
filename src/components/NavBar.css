@@ -60,7 +60,7 @@
 .user-info.hover > .user-info-content {
     visibility: visible;
     transition: opacity 0.2s ease-in;
-    opacity: 10%;
+    opacity: .1;
 }
 
 .user-info.open {
@@ -70,7 +70,7 @@
 .user-info.open > * {
     visibility: visible;
     transition: opacity 0.5s ease-in;
-    opacity: 100%;
+    opacity: 1;
 }
 .user-info.open > .user-avatar {
     background-color: #a5a5a5;
@@ -81,7 +81,7 @@
     transition: all 0.2s ease-out;
     border-radius: 5px;
     position: absolute;
-    opacity: 0%;
+    opacity: 0;
     visibility: hidden;
     /* display: hidden; */
     z-index: -990;
