@@ -50,7 +50,6 @@ export class MidiCanvas {
         let sheet = new SheetCanvas();
         let note = new NoteCanvas();
         let playbar = new PlayBar();
-
         // pack Compoments
         this.compoments = { sheet, note, timestampBar, pitchBar, playbar };
 
@@ -78,7 +77,6 @@ export class MidiCanvas {
 
 
     init = () => {
-        console.log(this.init)
         let { canvas } = this.context;
 
         window.addEventListener('resize', () => {
@@ -88,18 +86,15 @@ export class MidiCanvas {
         })
 
         canvas.addEventListener('mousemove', e => {
-            // e.preventDefault();
             let x = e.offsetX;
             let y = e.offsetY;
+            this.draw();
             // console.log(x,y);
             Object.values(this.compoments).forEach(compoment => {
                 compoment.onMouseMove(this.context, x, y);
             })
-            this.draw();
         });
         canvas.addEventListener('mousedown', e => {
-            // e.preventDefault();
-            // console.log(x,y);
             let x = e.offsetX;
             let y = e.offsetY;
 
@@ -119,25 +114,25 @@ export class MidiCanvas {
                             x: x,
                             y: y,
                         }
+                        Object.values(this.compoments).forEach(compoment => {
+                            compoment.onMidMouseDown(this.context, x, y);
+                        })
 
                     }
-                    Object.values(this.compoments).forEach(compoment => {
-                        compoment.onMidMouseDown(this.context, x, y);
-                    })
                     break;
                 case 2:
                     canvasEvent.isRightMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
-                        compoment.onRightMouseDown(this.context, x, y);
+                        compoment.onRightMouseDown(this.context,x, y);
                     })
                     break;
             }
 
         })
         canvas.addEventListener('mouseup', e => {
-            // e.preventDefault();
             let x = e.offsetX;
             let y = e.offsetY;
+            canvasEvent.lstMouseDownPos = null;
             this.draw();
             //Left Btn Up
             switch (e.button) {
@@ -149,18 +144,12 @@ export class MidiCanvas {
                     break;
                 case 1:
                     if (canvasEvent.isMidMouseDown) {
-                        // console.log(canvasEvent.isMidMouseDown)
                         canvasEvent.isMidMouseDown = false;
-                        canvasEvent.lstMouseDownPos = null;
+                        canvasEvent.lstMouseDownPos = null
                     }
-                    Object.values(this.compoments).forEach(compoment => {
-                        // compoment.onMidMouseUp(this.context, x, y);
-                    })
                     break;
                 case 2:
-                    canvasEvent.isRightMouseDown = true;
-
-                    break;
+                    canvas.isRightMouseDown = false;
             }
         })
     }
@@ -168,11 +157,6 @@ export class MidiCanvas {
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
-    }
-
-
-    initPitchBar() {
-
     }
 }
 
@@ -223,6 +207,7 @@ class PitchBarCanvas {
 
     }
     onRightMouseDown = (context, x, y) => {
+
     }
 }
 class TimestampBarCanvas {
@@ -268,14 +253,12 @@ class TimestampBarCanvas {
 
     }
     onRightMouseDown = (context, x, y) => {
+
     }
 }
 
 class SheetCanvas {
-    offset = {
-        x: 50,
-        y: 50
-    };
+    offset;
     notes;
     noteHover;
     selectedNote;
@@ -296,8 +279,11 @@ class SheetCanvas {
         this.mouseDown = false;
         this.notes = [];
         this.selectedNote = null;
-
-        this.sheetMod = CursorModEnum.fill;
+        this.offset = {
+            x: 0,
+            y: 0,
+        }
+        this.sheetMod = CursorModEnum.fill; //{0:Default,1:Move}
     }
     draw = (context) => {
         this.drawBackground(context);
@@ -321,6 +307,8 @@ class SheetCanvas {
 
         const timestampWidth = compoments.timestampBar.width;
         const pitchWidht = compoments.pitchBar.width;
+        const offsetX = this.offset.x;
+        const offsetY = this.offset.y;
         ctx.strokeStyle = this.wiresColor1;
         ctx.lineWidth = 1;
         this.wireWidth = 20 * (timestampScale + 1);
@@ -330,7 +318,7 @@ class SheetCanvas {
             if (i % 2 === 0) {
                 ctx.beginPath();
                 ctx.fillStyle = this.wiresColor2;
-                ctx.fillRect(pitchWidht - this.offset.x, timestampWidth + this.wireHeight * i - this.offset.y, this.wireWidth * 128, this.wireHeight)
+                ctx.fillRect(pitchWidht - offsetX, timestampWidth + this.wireHeight * i - offsetY, this.wireWidth * 128, this.wireHeight)
                 ctx.fill();
             }
         }
@@ -340,15 +328,15 @@ class SheetCanvas {
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
                 ctx.strokeStyle = this.measureColor;
-                ctx.moveTo(pitchWidht + this.wireWidth * i - this.offset.x, timestampWidth - this.offset.y);
-                ctx.lineTo(pitchWidht + this.wireWidth * i - this.offset.x, timestampWidth + this.wireHeight * 60 - this.offset.y);
+                ctx.moveTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth - offsetY);
+                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth + this.wireHeight * 60 - offsetY);
                 ctx.stroke();
                 ctx.lineWidth = 1;
             } else {
                 ctx.beginPath();
                 ctx.strokeStyle = this.wiresColor1;
-                ctx.moveTo(pitchWidht + this.wireWidth * i - this.offset.x, timestampWidth - this.offset.y);
-                ctx.lineTo(pitchWidht + this.wireWidth * i - this.offset.x, timestampWidth + this.wireHeight * 60 - this.offset.y);
+                ctx.moveTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth - offsetY);
+                ctx.lineTo(pitchWidht + this.wireWidth * i - offsetX, timestampWidth + this.wireHeight * 60 - offsetY);
                 ctx.stroke();
             }
         }
@@ -362,11 +350,12 @@ class SheetCanvas {
 
     onMouseMove = (context, x, y) => {
         if (!this.inArea(context, x, y)) return;
+        const offsetX = this.offset.x;
+        const offsetY = this.offset.y;
         const { scale, canvas, compoments } = context;
         const { timestampScale, pitchScale } = scale;
-        const { offset } = this
-        // console.log(this.offset);
-        let notePos = canvasHelper.canPos2notePos(context, { x: x + this.offset.x, y: y + this.offset.x })
+
+        let notePos = canvasHelper.canPos2notePos(context, { x: x + offsetX, y: y + offsetY })
 
 
         if (canvasEvent.isLeftMouseDown && this.selectedNote && this.sheetMod == CursorModEnum.fill) {
@@ -380,54 +369,35 @@ class SheetCanvas {
         if (canvasEvent.isMidMouseDown || this.sheetMod == CursorModEnum.move) {
             if (canvasEvent.lstMouseDownPos) {
                 const startPos = canvasEvent.lstMouseDownPos;
-                this.offset.x += startPos.x - x;
-                this.offset.y += (startPos.y - y);
-                console.log({ x: this.offset.x, y: this.offset.y }, startPos.x - x, startPos.y - y);
+                if (startPos.x - x >= 0 &&
+                    startPos.x - x <= 128 * 20 * (timestampScale + 1) + compoments.pitchBar.width + 1 - canvas.width)
+                    this.offset.x = startPos.x - x;
+                if (startPos.y - y >= 0 &&
+                    startPos.y - y <= 60 * 20 * (pitchScale + 1) + compoments.timestampBar.width - canvas.height)
+                    this.offset.y = startPos.y - y;
             }
-           
-            // if (this.offset.x + startPos.x - x >= 0 &&
-            //     this.offset.x + startPos.x - x <= 128 * 20 * (timestampScale + 1) + compoments.pitchBar.width + 1 - canvas.width) {
-            //     this.offset.x = this.offset.x + startPos.x - x;
-            //     console.log(this.offset.x, startPos.x - x);
-            // }
-            // if (this.offset.y + startPos.y - y >= 0 &&
-            //     this.offset.y + startPos.y - y <= 60 * 20 * (pitchScale + 1) + compoments.timestampBar.width - canvas.height) {
-            //     this.offset.y = this.offset.y + startPos.y - y;
-
-            // }
-            canvasEvent.lstMouseDownPos.x = x;
-            canvasEvent.lstMouseDownPos.y = y;
         }
+        // if (!isMouseDown) note.drawHover(context, x, y);
     }
     onLeftMouseDown = (context, x, y) => {
-
+        if (!this.inArea(context, x, y)) return;
+        const { compoments, timestampScale, pitchScale } = context;
+        const { note } = compoments;
+        const offsetX = this.offset.x;
+        const offsetY = this.offset.y;
         if (this.inArea(context, x, y)) {
-            const { compoments } = context;
-            const { note } = compoments;
-            const offsetX = this.offset.x;
-            const offsetY = this.offset.y;
-
-            // console.log(this.offset)
             note.createNote(context, x + offsetX, y + offsetY);
         }
     }
     onLeftMouseUp = (context, x, y) => {
-
-        const { compoments } = context;
-        const { note } = compoments;
+        if (!this.inArea(context, x, y)) return;
     }
     onMidMouseDown = (context, x, y) => {
-        if (this.inArea(context, x, y))
-            if (canvasEvent.lstMouseDownPos) {
-                canvasEvent.lstMouseDownPos.x = x;
-                canvasEvent.lstMouseDownPos.y = y;
-                // const startPos = canvasEvent.mouseDownPos;
-                // canvasEvent.mouseDownPos.x += this.offset.x;
-                // canvasEvent.mouseDownPos.y += this.offset.y;
-
-                // this.offset.x += canvasEvent.lstMouseDownPos.x - x;
-                // this.offset.y += canvasEvent.lstMouseDownPos.y - y;
-            }
+        if (canvasEvent.lstMouseDownPos) {
+            const startPos = canvasEvent.lstMouseDownPos;
+            startPos.x += this.offset.x;
+            startPos.y += this.offset.y;
+        }
     }
     onRightMouseDown = (context, x, y) => {
         if (this.notes) {
@@ -438,6 +408,8 @@ class SheetCanvas {
 }
 
 class NoteCanvas {
+
+
     color = "#FFA9BE";
     hoverColor = "#FFD3DE";
     constructor() {
@@ -475,9 +447,7 @@ class NoteCanvas {
         ctx.fillRect(canPos.x - offsetX, canPos.y - offsetY, canPos.width * length - 2, canPos.height - 2);
     }
 
-    inArea = (context, x, y) => {
-        // isXIn = 
-    }
+    inArea = () => { }
     onMouseMove = () => {
         if (!this.inArea()) return;
     }
@@ -488,6 +458,9 @@ class NoteCanvas {
 
     }
     onMidMouseDown = (context, x, y) => {
+
+    }
+    onRightMouseDown = (context, x, y) => {
 
     }
     drawHover = (context, note) => {
@@ -529,9 +502,6 @@ class NoteCanvas {
         sheet.selectedNote = note;
         sheet.notes.push(note);
     }
-    onRightMouseDown = (context, x, y) => {
-        const { compoments } = context;
-    }
 
 }
 
@@ -572,8 +542,8 @@ class Note {
         }
         return false;
     }
-
     inArea = (context, x, y) => {
+        console.log(context);
         const { compoments } = context;
         const { sheet } = compoments;
         const { offset } = sheet;
@@ -584,7 +554,6 @@ class Note {
         if (isXIn && isYIn) return true;
         return false;
     }
-
     normalize = () => {
         if (this.startAt.x > this.endAt.x) {
             let t = this.startAt.x;
