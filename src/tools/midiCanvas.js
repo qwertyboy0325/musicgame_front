@@ -82,13 +82,11 @@ export class MidiCanvas {
         window.addEventListener('resize', () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-            this.draw();
         })
-
+        window.requestAnimationFrame(this.draw);
         canvas.addEventListener('mousemove', e => {
             let x = e.offsetX;
             let y = e.offsetY;
-            this.draw();
             // console.log(x,y);
             Object.values(this.compoments).forEach(compoment => {
                 compoment.onMouseMove(this.context, x, y);
@@ -98,7 +96,6 @@ export class MidiCanvas {
             let x = e.offsetX;
             let y = e.offsetY;
 
-            this.draw();
             //Left Btn Down
             switch (e.button) {
                 case 0:
@@ -123,7 +120,7 @@ export class MidiCanvas {
                 case 2:
                     canvasEvent.isRightMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
-                        compoment.onRightMouseDown(this.context,x, y);
+                        compoment.onRightMouseDown(this.context, x, y);
                     })
                     break;
             }
@@ -133,7 +130,6 @@ export class MidiCanvas {
             let x = e.offsetX;
             let y = e.offsetY;
             canvasEvent.lstMouseDownPos = null;
-            this.draw();
             //Left Btn Up
             switch (e.button) {
                 case 0:
@@ -157,6 +153,7 @@ export class MidiCanvas {
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
+        window.requestAnimationFrame(this.draw);
     }
 }
 
@@ -503,6 +500,10 @@ class NoteCanvas {
         sheet.notes.push(note);
     }
 
+}
+
+class Notes {
+    notes;
 }
 
 class Note {
