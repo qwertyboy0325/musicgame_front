@@ -15,9 +15,8 @@ function App() {
         {/* <Route path="playground" element={<MusicEditor />} /> */}
       </Routes>
     </div>
-
-    // </React.Fragment>
   );
+
 }
 
 export default App;
