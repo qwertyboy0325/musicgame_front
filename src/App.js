@@ -9,6 +9,16 @@ function App() {
   return (
     // <React.Fragment>
     <div className="App" >
+      <script>
+        {
+          window.onload = () => {
+            document.body.oncontextmenu = e => {
+              var e = e || window.event;
+              e.preventDefault();
+            }
+          }
+        }
+      </script>
       <NavBar />
       <Routes>
         <Route path="/" element={<MusicEditor />} />
