@@ -35,7 +35,8 @@ export class MidiCanvas {
     compoments;
     timestampScale;
     pitchScale;
-
+    canEdit;
+    isEnable;
     constructor(c) {
         // init Canvas
         let canvas = c;
@@ -50,6 +51,7 @@ export class MidiCanvas {
         let sheet = new SheetCanvas();
         let note = new NoteCanvas();
         let playbar = new PlayBar();
+
         // pack Compoments
         this.compoments = { sheet, note, timestampBar, pitchBar, playbar };
 
@@ -62,6 +64,10 @@ export class MidiCanvas {
 
         //setEvent
         canvasEvent.isLeftMouseDown = false;
+
+        //setEdit、Enable
+        this.canEdit=true;
+        this.isEnable=true;
 
         // set Context
         let compoments = this.compoments;
@@ -78,12 +84,12 @@ export class MidiCanvas {
 
     init = () => {
         let { canvas } = this.context;
-
         window.addEventListener('resize', () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
         })
         window.requestAnimationFrame(this.draw);
+        if(!this.isEnable) return;
         canvas.addEventListener('mousemove', e => {
             let x = e.offsetX;
             let y = e.offsetY;
@@ -99,6 +105,8 @@ export class MidiCanvas {
             //Left Btn Down
             switch (e.button) {
                 case 0:
+                    
+                    if(!this.canEdit) return;
                     canvasEvent.isLeftMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onLeftMouseDown(this.context, x, y);
@@ -118,6 +126,7 @@ export class MidiCanvas {
                     }
                     break;
                 case 2:
+                     if(!this.canEdit) return;
                     canvasEvent.isRightMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onRightMouseDown(this.context, x, y);
