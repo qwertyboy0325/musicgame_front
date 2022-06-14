@@ -35,8 +35,6 @@ export class MidiCanvas {
     compoments;
     timestampScale;
     pitchScale;
-    canEdit;
-    isEnable;
     constructor(c) {
         // init Canvas
         let canvas = c;
@@ -66,19 +64,18 @@ export class MidiCanvas {
         canvasEvent.isLeftMouseDown = false;
 
         //setEdit、Enable
-        this.canEdit=true;
-        this.isEnable=true;
+        let isEditable=true;
+        let isEnable=true;
 
         // set Context
         let compoments = this.compoments;
         this.context = {
             canvas, ctx,
             scale: { timestampScale: this.timestampScale, pitchScale: this.pitchScale },
-            compoments,
+            compoments,isEditable,isEnable,
         };
         this.init();
     }
-
 
 
 
@@ -89,8 +86,8 @@ export class MidiCanvas {
             canvas.height = canvas.offsetHeight;
         })
         window.requestAnimationFrame(this.draw);
-        if(!this.isEnable) return;
         canvas.addEventListener('mousemove', e => {
+            if(!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
             // console.log(x,y);
@@ -99,14 +96,14 @@ export class MidiCanvas {
             })
         });
         canvas.addEventListener('mousedown', e => {
+            if(!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
 
             //Left Btn Down
             switch (e.button) {
                 case 0:
-                    
-                    if(!this.canEdit) return;
+                    if(!this.context.isEditable) return;
                     canvasEvent.isLeftMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onLeftMouseDown(this.context, x, y);
@@ -126,7 +123,7 @@ export class MidiCanvas {
                     }
                     break;
                 case 2:
-                     if(!this.canEdit) return;
+                     if(!this.context.isEditable) return;
                     canvasEvent.isRightMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onRightMouseDown(this.context, x, y);
@@ -136,12 +133,14 @@ export class MidiCanvas {
 
         })
         canvas.addEventListener('mouseup', e => {
+            if(!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
             canvasEvent.lstMouseDownPos = null;
             //Left Btn Up
             switch (e.button) {
                 case 0:
+                    if(!this.context.isEditable) return;
                     canvasEvent.isLeftMouseDown = false;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onLeftMouseUp(this.context, x, y);
@@ -154,6 +153,7 @@ export class MidiCanvas {
                     }
                     break;
                 case 2:
+                    if(!this.context.isEditable) return;
                     canvas.isRightMouseDown = false;
             }
         })
@@ -428,7 +428,7 @@ class NoteCanvas {
         const { compoments } = context;
         const { sheet } = compoments;
         const { notes } = sheet;
-        if (sheet.noteHover) {
+        if (sheet.noteHover &&  context.isEditable) {
             this.drawHover(context, sheet.noteHover);
         }
         if (sheet.selectedNote) {
