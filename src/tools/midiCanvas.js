@@ -66,25 +66,29 @@ export class MidiCanvas {
         //setEvent
         canvasEvent.isLeftMouseDown = false;
 
+        //setEdit、Enable
+        let isEditable = true;
+        let isEnable = true;
+
         // set Context
         let compoments = this.compoments;
         this.context = {
             canvas, ctx,
             scale: { timestampScale: this.timestampScale, pitchScale: this.pitchScale },
-            compoments,
+            compoments, isEditable, isEnable,
         };
         this.init();
     }
 
     init = () => {
         let { canvas } = this.context;
-
         window.addEventListener('resize', () => {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
         })
         window.requestAnimationFrame(this.draw);
         canvas.addEventListener('mousemove', e => {
+            if (!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
             // console.log(x,y);
@@ -93,12 +97,14 @@ export class MidiCanvas {
             })
         });
         canvas.addEventListener('mousedown', e => {
+            if (!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
 
             //Left Btn Down
             switch (e.button) {
                 case 0:
+                    if (!this.context.isEditable) return;
                     canvasEvent.isLeftMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onLeftMouseDown(this.context, x, y);
@@ -118,6 +124,7 @@ export class MidiCanvas {
                     }
                     break;
                 case 2:
+                    if (!this.context.isEditable) return;
                     canvasEvent.isRightMouseDown = true;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onRightMouseDown(this.context, x, y);
@@ -127,12 +134,14 @@ export class MidiCanvas {
 
         })
         canvas.addEventListener('mouseup', e => {
+            if (!this.context.isEnable) return;
             let x = e.offsetX;
             let y = e.offsetY;
             canvasEvent.lstMouseDownPos = null;
             //Left Btn Up
             switch (e.button) {
                 case 0:
+                    if (!this.context.isEditable) return;
                     canvasEvent.isLeftMouseDown = false;
                     Object.values(this.compoments).forEach(compoment => {
                         compoment.onLeftMouseUp(this.context, x, y);
@@ -145,6 +154,7 @@ export class MidiCanvas {
                     }
                     break;
                 case 2:
+                    if (!this.context.isEditable) return;
                     canvas.isRightMouseDown = false;
             }
         })
@@ -241,7 +251,10 @@ class TimestampBarCanvas {
 
     }
     onLeftMouseDown = (context, x, y) => {
-        if (this.inArea(context, x, y)) console.log("Timestamp Bar In.");
+        if (!this.inArea(context, x, y)) return;
+        console.log("Timestamp Bar In.");
+        context.compoments.playbar.isPlaying = !context.compoments.playbar.isPlaying;
+        console.log(context.compoments.playbar.isPlaying);
     }
     onLeftMouseUp = (context, x, y) => {
         if (this.inArea(context, x, y)) console.log("Timestamp Bar Out.");
@@ -419,7 +432,7 @@ class NoteCanvas {
         const { compoments } = context;
         const { sheet } = compoments;
         const { notes } = sheet;
-        if (sheet.noteHover) {
+        if (sheet.noteHover && context.isEditable) {
             this.drawHover(context, sheet.noteHover);
         }
         if (sheet.selectedNote) {
@@ -565,22 +578,33 @@ class Note {
 }
 
 class PlayBar {
-    start;
+    startPoint;
+    offset;
+    isPlaying;
+    constructor() {
+        this.startPoint = 0;
+        this.offset = 0;
+        this.isPlaying = false;
+    }
     draw = (context) => {
         const { ctx, canvas, compoments } = context;
-        this.start = compoments.pitchBar.width;
+        this.startPoint = compoments.pitchBar.width;
+
+        if (this.isPlaying && this.offset + 3  < 128 * compoments.sheet.wireWidth) this.offset += 3;
+        if (this.offset - compoments.sheet.offset.x < 0 || this.offset - compoments.sheet.offset.x > canvas.offsetWidth) return;
+
         ctx.fillStyle = "#0000C6";
         ctx.beginPath();
-        ctx.moveTo(this.start - 5, 5);
-        ctx.lineTo(this.start + 5, 5);
-        ctx.lineTo(this.start, 20);
+        ctx.moveTo(this.startPoint + this.offset - 5 - compoments.sheet.offset.x, 5);
+        ctx.lineTo(this.startPoint + this.offset + 5 - compoments.sheet.offset.x, 5);
+        ctx.lineTo(this.startPoint + this.offset - compoments.sheet.offset.x, 20);
         ctx.fill();
 
         ctx.lineWidth = 1.8;
         ctx.strokeStyle = "#0000C6";
         ctx.beginPath();
-        ctx.moveTo(this.start, 18);
-        ctx.lineTo(this.start, canvas.offsetHeight);
+        ctx.moveTo(this.startPoint + this.offset - compoments.sheet.offset.x, 18);
+        ctx.lineTo(this.startPoint + this.offset - compoments.sheet.offset.x, canvas.offsetHeight);
         ctx.stroke();
     }
     onMouseMove = (context, x, y) => {
