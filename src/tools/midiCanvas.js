@@ -20,6 +20,7 @@ class CanvasHelper {
         return { x: Math.ceil(_X / wireWidth) - 1, y: Math.ceil(_Y / wireHeight) - 1 };
     }
 }
+
 class CanvasEvent {
     isLeftMouseDown = false;
     isMidMouseDown = false;
@@ -35,6 +36,7 @@ export class MidiCanvas {
     compoments;
     timestampScale;
     pitchScale;
+    isEditable;
 
     constructor(c) {
         // init Canvas
@@ -50,6 +52,7 @@ export class MidiCanvas {
         let sheet = new SheetCanvas();
         let note = new NoteCanvas();
         let playbar = new PlayBar();
+
         // pack Compoments
         this.compoments = { sheet, note, timestampBar, pitchBar, playbar };
 
@@ -72,9 +75,6 @@ export class MidiCanvas {
         };
         this.init();
     }
-
-
-
 
     init = () => {
         let { canvas } = this.context;
