@@ -158,10 +158,19 @@ export class MidiCanvas {
             }
         })
     }
-    draw = () => {
+    startTime;
+    draw = (timestamp) => {
+        if (!this.startTime) this.startTime = timestamp;
+        let progress = timestamp - this.startTime;
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
+
+        if (progress > 66) {
+            this.compoments.playbar.countOffset(this.compoments);
+            this.startTime = timestamp;
+        }
+
         window.requestAnimationFrame(this.draw);
     }
 }
@@ -589,7 +598,6 @@ class PlayBar {
         const { ctx, canvas, compoments } = context;
         this.startPoint = compoments.pitchBar.width;
 
-        if (this.isPlaying && this.offset + 3  < 128 * compoments.sheet.wireWidth) this.offset += 3;
         if (this.offset - compoments.sheet.offset.x < 0 || this.offset - compoments.sheet.offset.x > canvas.offsetWidth) return;
 
         ctx.fillStyle = "#0000C6";
@@ -605,6 +613,12 @@ class PlayBar {
         ctx.moveTo(this.startPoint + this.offset - compoments.sheet.offset.x, 18);
         ctx.lineTo(this.startPoint + this.offset - compoments.sheet.offset.x, canvas.offsetHeight);
         ctx.stroke();
+    }
+    countOffset = (compoments) => {
+        if(!this.isPlaying) return;
+        let speed=128 * compoments.sheet.wireWidth/(15*20); // 每秒呼叫次數*想要播放幾秒
+        if (this.offset + speed >= 128 * compoments.sheet.wireWidth) this.offset = 128 * compoments.sheet.wireWidth;
+        if (this.offset + speed < 128 * compoments.sheet.wireWidth) this.offset += speed;
     }
     onMouseMove = (context, x, y) => {
 
