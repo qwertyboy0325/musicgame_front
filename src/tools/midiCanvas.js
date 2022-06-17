@@ -37,8 +37,8 @@ export class MidiCanvas {
     timestampScale;
     pitchScale;
     isEditable;
-
-    constructor(c) {
+    currentPlayer;
+    setMidiCanvas(c) {
         // init Canvas
         let canvas = c;
         let ctx;
@@ -70,12 +70,14 @@ export class MidiCanvas {
         let isEditable = true;
         let isEnable = true;
 
+        //setCurrentPlayer
+        this.currentPlayer = 0;
         // set Context
         let compoments = this.compoments;
         this.context = {
             canvas, ctx,
             scale: { timestampScale: this.timestampScale, pitchScale: this.pitchScale },
-            compoments, isEditable, isEnable,
+            compoments, isEditable, isEnable, currentPlayer: this.currentPlayer,
         };
         this.init();
     }
@@ -159,20 +161,28 @@ export class MidiCanvas {
             }
         })
     }
+
     startTime;
     draw = (timestamp) => {
         if (!this.startTime) this.startTime = timestamp;
         let progress = timestamp - this.startTime;
+
+        this.context.currentPlayer = this.currentPlayer;
+
         Object.values(this.compoments).forEach(values => {
             values.draw(this.context);
         })
 
-        if (progress > 66) {
-            this.compoments.playbar.countOffset(this.compoments);
+        if (progress > 16) {
+            this.compoments.playbar.countOffset(this.context);
             this.startTime = timestamp;
         }
 
         window.requestAnimationFrame(this.draw);
+    }
+
+    setCurrentPlayer = (Player) => {
+        this.currentPlayer = Player;
     }
 }
 
@@ -296,7 +306,7 @@ class SheetCanvas {
         this.wiresColor2 = "#CCCCCC";
         this.measureColor = "#000000";
         this.mouseDown = false;
-        this.notes = [];
+        this.notes = [[], [], [], []];
         this.selectedNote = null;
         this.offset = {
             x: 0,
@@ -307,6 +317,7 @@ class SheetCanvas {
     draw = (context) => {
         this.drawBackground(context);
         this.drawWire(context);
+        console.log(context.currentPlayer);
     }
     drawBackground = (context) => {
         const { ctx, canvas, compoments } = context;
@@ -419,8 +430,8 @@ class SheetCanvas {
         }
     }
     onRightMouseDown = (context, x, y) => {
-        if (this.notes) {
-            this.notes = this.notes.filter(item => !item.inArea(context, x, y));
+        if (this.notes[context.currentPlayer]) {
+            this.notes[context.currentPlayer] = this.notes[context.currentPlayer].filter(item => !item.inArea(context, x, y));
             console.log(this.notes)
         }
     }
@@ -446,9 +457,9 @@ class NoteCanvas {
         }
         if (sheet.selectedNote) {
         }
-        if (notes.length)
-            for (let i = 0, length = notes.length; i < length; i++) {
-                this.drawNote(context, notes[i]);
+        if (notes[context.currentPlayer].length)
+            for (let i = 0, length = notes[context.currentPlayer].length; i < length; i++) {
+                this.drawNote(context, notes[context.currentPlayer][i]);
             }
 
 
@@ -519,7 +530,7 @@ class NoteCanvas {
         }
         let note = new Note(noteX, noteY);
         sheet.selectedNote = note;
-        sheet.notes.push(note);
+        sheet.notes[context.currentPlayer].push(note);
     }
 
 }
@@ -555,10 +566,11 @@ class Note {
     }
     // check note is existed?
     static isExisted = (context, pos) => {
-        let { notes } = context.compoments.sheet;
+        let { sheet } = context.compoments;
+        let { notes } = sheet;
         let isXIn, isYIn = false;
-        for (let i = 0, length = notes.length; i < length; i++) {
-            let note = notes[i];
+        for (let i = 0, length = notes[context.currentPlayer].length; i < length; i++) {
+            let note = notes[context.currentPlayer][i];
             isXIn = ((pos.x >= note.startAt.x) && (pos.x <= note.endAt.x));
             isYIn = ((pos.y >= note.startAt.y) && (pos.y <= note.endAt.y));
             if (isXIn && isYIn) return true;
@@ -592,34 +604,37 @@ class PlayBar {
     isPlaying;
     constructor() {
         this.startPoint = 0;
-        this.offset = 0;
+        this.offset = [0,0,0,0];
         this.isPlaying = false;
     }
     draw = (context) => {
         const { ctx, canvas, compoments } = context;
         this.startPoint = compoments.pitchBar.width;
-
-        if (this.offset - compoments.sheet.offset.x < 0 || this.offset - compoments.sheet.offset.x > canvas.offsetWidth) return;
+        if (this.offset[context.currentPlayer] - compoments.sheet.offset.x < 0 || this.offset[context.currentPlayer] - compoments.sheet.offset.x > canvas.offsetWidth) return;
 
         ctx.fillStyle = "#0000C6";
         ctx.beginPath();
-        ctx.moveTo(this.startPoint + this.offset - 5 - compoments.sheet.offset.x, 5);
-        ctx.lineTo(this.startPoint + this.offset + 5 - compoments.sheet.offset.x, 5);
-        ctx.lineTo(this.startPoint + this.offset - compoments.sheet.offset.x, 20);
+        ctx.moveTo(this.startPoint + this.offset[context.currentPlayer] - 5 - compoments.sheet.offset.x, 5);
+        ctx.lineTo(this.startPoint + this.offset[context.currentPlayer] + 5 - compoments.sheet.offset.x, 5);
+        ctx.lineTo(this.startPoint + this.offset[context.currentPlayer] - compoments.sheet.offset.x, 20);
         ctx.fill();
 
         ctx.lineWidth = 1.8;
         ctx.strokeStyle = "#0000C6";
         ctx.beginPath();
-        ctx.moveTo(this.startPoint + this.offset - compoments.sheet.offset.x, 18);
-        ctx.lineTo(this.startPoint + this.offset - compoments.sheet.offset.x, canvas.offsetHeight);
+        ctx.moveTo(this.startPoint + this.offset[context.currentPlayer] - compoments.sheet.offset.x, 18);
+        ctx.lineTo(this.startPoint + this.offset[context.currentPlayer] - compoments.sheet.offset.x, canvas.offsetHeight);
         ctx.stroke();
     }
-    countOffset = (compoments) => {
-        if(!this.isPlaying) return;
-        let speed=128 * compoments.sheet.wireWidth/(15*20); // 每秒呼叫次數*想要播放幾秒
-        if (this.offset + speed >= 128 * compoments.sheet.wireWidth) this.offset = 128 * compoments.sheet.wireWidth;
-        if (this.offset + speed < 128 * compoments.sheet.wireWidth) this.offset += speed;
+    countOffset = (context) => {
+        if (!this.isPlaying) return;
+        let speed = 128 * context.compoments.sheet.wireWidth / (60 * 5); // 每秒呼叫次數*想要播放幾秒
+        if (this.offset[context.currentPlayer] + speed >= 128 * context.compoments.sheet.wireWidth) {
+
+            this.offset[context.currentPlayer] = 128 * context.compoments.sheet.wireWidth;
+            this.isPlaying = false;
+        }
+        if (this.offset[context.currentPlayer] + speed < 128 * context.compoments.sheet.wireWidth) this.offset[context.currentPlayer] += speed;
     }
     onMouseMove = (context, x, y) => {
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MidiCanvas } from "../tools/midiCanvas";
 import "./playground.css"
 import PreviousImg from "../img/previous.png"
@@ -13,16 +13,18 @@ import selectImg from "../img/select.png"
 
 
 
-export function PlayGround() {
+export function PlayGround({ currentPlayer }) {
     const canvasRef = useRef(null);
-
+    const [midicanvas, setMidicanvas] = useState(new MidiCanvas());
     useEffect(() => {
         const canvas = canvasRef.current;
+        midicanvas.setMidiCanvas(canvas)
+        //console.log(midicanvas);
+    }, [0])
+    useEffect(() => {
+        midicanvas.setCurrentPlayer(currentPlayer);
 
-        const midicanvas = new MidiCanvas(canvas);
-        midicanvas.draw();
-    })
-
+    }, [currentPlayer])
     return (
         <div id="playground">
             <div id="control-bar">
