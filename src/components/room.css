@@ -1,0 +1,29 @@
+body {
+    background-image: url(../background.png);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}
+
+#container {
+    position: relative;
+}
+
+.login_background {
+    width: 600px;
+    position: absolute;
+    left: 50%;
+    margin-left: -300px;
+}
+
+img {
+    -webkit-user-drag: none;
+}
+
+.roomButton {
+    position: absolute;
+    width: 400px;
+    left: 50%;
+    margin-left: -200px;
+}

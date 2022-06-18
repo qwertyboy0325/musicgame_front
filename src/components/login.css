@@ -1,0 +1,41 @@
+body {
+    background-image: url(../background.png);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}
+
+#container {
+    position: relative;
+}
+
+.login_background {
+    width: 600px;
+    position: absolute;
+    left: 50%;
+    margin-left: -300px;
+}
+
+img {
+    -webkit-user-drag: none;
+}
+
+.login {
+    position: absolute;
+    background-color: transparent;
+    height: 80px;
+    width: 300px;
+    left: 50%;
+    margin-left: -110px;
+    border: none;
+    outline-style: none;
+    font-size: 40px;
+}
+
+.loginButton {
+    position: absolute;
+    height: 100px;
+    left: 50%;
+    margin-top: 450px;
+}

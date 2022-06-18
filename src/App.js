@@ -2,6 +2,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import './App.css';
 import { Home } from './components/home';
+import { Login } from "./components/login";
+import { Room } from "./components/room";
 import { NavBar } from './components/NavBar'
 import { MusicEditor } from './components/musicEditor';
 

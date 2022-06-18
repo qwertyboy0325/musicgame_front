@@ -1,0 +1,19 @@
+body {
+    background-image: url(../background.png);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}
+
+#play {
+    width: 200px;
+    position: absolute;
+    left: 50%;
+    margin-top: 250px;
+    margin-left: -100px;
+}
+
+img {
+    -webkit-user-drag: none;
+}
